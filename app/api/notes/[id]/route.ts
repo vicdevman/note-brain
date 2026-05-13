@@ -6,16 +6,17 @@ import clientPromise from "@/app/lib/mongodb";
 // GET /api/notes/[id] - Get a specific note
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     
-    const note = await Note.findOne({ _id: params.id, userId: session.user.id });
+    const note = await Note.findOne({ _id: id, userId: session.user.id });
     
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
@@ -31,9 +32,10 @@ export async function GET(
 // PATCH /api/notes/[id] - Update a specific note
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,7 +45,7 @@ export async function PATCH(
     
     
     const note = await Note.findOneAndUpdate(
-      { _id: params.id, userId: session.user.id },
+      { _id: id, userId: session.user.id },
       { 
         title: title || "Untitled",
         content: content || [],
@@ -66,16 +68,17 @@ export async function PATCH(
 // DELETE /api/notes/[id] - Delete a specific note
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     
-    const note = await Note.findOneAndDelete({ _id: params.id, userId: session.user.id });
+    const note = await Note.findOneAndDelete({ _id: id, userId: session.user.id });
     
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
