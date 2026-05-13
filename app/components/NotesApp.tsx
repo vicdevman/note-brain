@@ -9,7 +9,6 @@ import SidebarContents from "./Sidebar";
 import NoteEditor from "./NoteEditor";
 import type {
   Note,
-  NoteBlock,
   NoteId,
   NoteMenuState,
   TitleEditState,
@@ -87,60 +86,6 @@ export default function NotesApp() {
     );
   }
 
-  function updateBlock(
-    noteId: NoteId,
-    blockId: string,
-    patch: Partial<NoteBlock>,
-  ) {
-    setNotes((prev) =>
-      prev.map((n) => {
-        if (n.id !== noteId) return n;
-        return {
-          ...n,
-          updatedAt: now(),
-          blocks: n.blocks.map((b) =>
-            b.id === blockId ? { ...b, ...patch } : b,
-          ),
-        };
-      }),
-    );
-  }
-
-  function insertBlockAfter(
-    noteId: NoteId,
-    afterBlockId: string,
-    block: NoteBlock,
-  ) {
-    setNotes((prev) =>
-      prev.map((n) => {
-        if (n.id !== noteId) return n;
-        const idx = n.blocks.findIndex((b) => b.id === afterBlockId);
-        if (idx === -1) return n;
-        const nextBlocks = [
-          ...n.blocks.slice(0, idx + 1),
-          block,
-          ...n.blocks.slice(idx + 1),
-        ];
-        return { ...n, updatedAt: now(), blocks: nextBlocks };
-      }),
-    );
-  }
-
-  function removeBlock(noteId: NoteId, blockId: string) {
-    setNotes((prev) =>
-      prev.map((n) => {
-        if (n.id !== noteId) return n;
-        const nextBlocks = n.blocks.filter((b) => b.id !== blockId);
-        return {
-          ...n,
-          updatedAt: now(),
-          blocks: nextBlocks.length
-            ? nextBlocks
-            : [{ id: uid(), type: "paragraph", html: "" }],
-        };
-      }),
-    );
-  }
 
   return (
     <SessionProvider>
@@ -234,7 +179,7 @@ export default function NotesApp() {
           {!sidebarCollapsed && (
             <div className="flex items-center gap-3 min-w-0">
               <Image
-                src="/note-brain-brand-kit/new-logo-primary.png"
+                src="/brane-brand-kit/new-logo-primary.png"
                 alt="Note Brain"
                 width={500}
                 height={500}  
@@ -298,7 +243,7 @@ export default function NotesApp() {
       </aside>
 
       {/* Editor column */}
-      <main className={`flex-1 min-w-0 bg-[var(--nb-note-bg)] transition-[margin-left] duration-300 ease-out ${sidebarCollapsed ? "md:ml-[68px]" : "md:ml-[288px]"}`}>
+      <main className={`flex-1 min-w-0 bg-[var(--nb-note-bg)] transition-[margin-left] min-h-vh h-full duration-300 ease-out ${sidebarCollapsed ? "md:ml-[58px]" : "md:ml-[260px]"}`}>
         <div className="h-14 md:h-0" />
         <div className="w-full px-4 md:px-8 py-8">
           {!selected ? (
@@ -308,17 +253,6 @@ export default function NotesApp() {
           ) : (
             <NoteEditor
               note={selected}
-              onChangeTitle={(title) =>
-                updateNote(selected.id, { title: title })
-              }
-              onChangeBlock={(blockId, patch) =>
-                updateBlock(selected.id, blockId, patch)
-              }
-              onInsertBlockAfter={(afterId, block) =>
-                insertBlockAfter(selected.id, afterId, block)
-              }
-              onRemoveBlock={(blockId) => removeBlock(selected.id, blockId)}
-              onReplaceBlocks={(blocks) => updateNote(selected.id, { blocks })}
             />
           )}
         </div>

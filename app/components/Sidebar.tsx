@@ -6,7 +6,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import MiniPopup, { PopupAction } from "./MiniPopup";
 import type { Note, NoteId, NoteMenuState, TitleEditState } from "./notesTypes";
-import { getPlainTextFromHtml } from "./notesUtils";
 
 type SidebarBaseProps = {
   notes: Note[];
@@ -87,14 +86,14 @@ export default function SidebarContents(props: SidebarBaseProps) {
           <button
             type="button"
             onClick={props.onCreate}
-            className="inline-flex items-center justify-center rounded-md h-9 w-9 bg-[var(--nb-surface-muted)] text-[var(--nb-text)] hover:opacity-90 transition-opacity"
+            className="rounded-full w-6 h-6 p-1 flex items-center justify-center bg-[var(--nb-border-strong)] text-[var(--nb-border)]"
             aria-label="Create note"
           >
             <Plus className="h-4 w-4" />
           </button>
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md h-9 w-9 bg-[var(--nb-surface-muted)] text-[var(--nb-text)] hover:opacity-90 transition-opacity"
+            className="rounded-full w-6 h-6 p-0.5 flex items-center justify-center text-[var(--nb-border)]"
             aria-label="Search"
           >
             <Search className="h-4 w-4" />
