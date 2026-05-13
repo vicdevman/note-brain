@@ -5,6 +5,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useDebouncedCallback } from "use-debounce";
 import { useState, useEffect } from "react";
+import { localDB } from "../lib/pouchdb";
 
 interface EditorProps {
   noteId: string;
@@ -15,7 +16,7 @@ interface EditorProps {
 export default function Editor({ noteId, initialContent = [] }: EditorProps) {
   const [isClient, setIsClient] = useState(false);
   const [hasContent, setHasContent] = useState(false);
-  
+
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: initialContent.length > 0 ? initialContent : undefined,
@@ -25,37 +26,46 @@ export default function Editor({ noteId, initialContent = [] }: EditorProps) {
     setIsClient(true);
   }, []);
 
- const saveNote = useDebouncedCallback(async (blocks) => {
-  // 1. Look at the first block
-  const firstBlock = blocks[0];
-  let title = "Untitled";
+  const saveNote = useDebouncedCallback(async (blocks) => {
+    const firstBlock = blocks[0];
+    let title = "Untitled";
 
-  if (firstBlock) {
-    // This extracts text regardless of whether it's a heading, paragraph, or list item
-    const blockText = firstBlock.content
-      .map((item: any) => item.text)
-      .join("")
-      .trim();
-    
-    title = blockText || "Untitled";
-  }
+    if (firstBlock) {
+      title =
+        firstBlock.content
+          .map((item: any) => item.text)
+          .join("")
+          .trim() || "Untitled";
+    }
 
-  // 2. Save to DB
-  await fetch(`/api/notes/${noteId}`, {
-    method: "PATCH",
-    body: JSON.stringify({ title, content: blocks }),
-  });
-}, 1000);
+    try {
+      // 1. Get the current doc to get the latest _rev
+      const existingDoc = await localDB
+        .get(noteId)
+        .catch(() => ({ _id: noteId }));
+
+      // 2. Update local PouchDB (Instant & Offline)
+      await localDB.put({
+        ...existingDoc,
+        title,
+        content: blocks,
+        updatedAt: Date.now(),
+      });
+
+      console.log("Saved to Local PouchDB");
+    } catch (err) {
+      console.error("Local save failed", err);
+    }
+  }, 500);
 
   // Only render on client to avoid hydration issues
   if (!isClient) {
     return null;
   }
 
-  // Renders the editor instance using a React component.
   return (
-    <BlockNoteView 
-      editor={editor} 
+    <BlockNoteView
+      editor={editor}
       onChange={() => {
         const blocks = editor.document;
         saveNote(blocks);

@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/lib/auth";
 import { Note } from "@/app/models/Note";
 import clientPromise from "@/app/lib/mongodb";
+import connectMongoose from "@/app/lib/mongoose";
+import { randomUUID } from "crypto";
 
 // GET /api/notes - Get all notes for the authenticated user
 export async function GET() {
   try {
+    await connectMongoose();
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,13 +37,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, content } = await request.json();
+    const { title, content, pouchId } = await request.json();
     console.log('Request body:', { title, content });
     
-  
+    await connectMongoose();
     console.log('MongoDB connected');
     
     const note = await Note.create({
+      pouchId: pouchId || `note_${randomUUID()}`,
       title: title || "Untitled",
       content: content || [{ type: "paragraph", content: [] }],
       userId: session.user.id,

@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
 
 const NoteSchema = new mongoose.Schema({
+  // Store the PouchDB ID here so they match across environments
+  pouchId: { type: String, required: true, unique: true }, 
   title: { type: String, default: "Untitled" },
-  content: { type: Array, required: true }, // This stores the JSON blocks
+  content: { type: Array, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  // Store the latest revision hash to manage sync conflicts
+  lastRev: { type: String }, 
   updatedAt: { type: Date, default: Date.now },
 });
 

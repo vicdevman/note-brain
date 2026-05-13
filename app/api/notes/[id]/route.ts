@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/lib/auth";
 import { Note } from "@/app/models/Note";
 import clientPromise from "@/app/lib/mongodb";
+import connectMongoose from "@/app/lib/mongoose";
 
 // GET /api/notes/[id] - Get a specific note
 export async function GET(
@@ -9,6 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectMongoose();
     const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
@@ -16,7 +18,7 @@ export async function GET(
     }
 
     
-    const note = await Note.findOne({ _id: id, userId: session.user.id });
+    const note = await Note.findOne({ pouchId: id, userId: session.user.id });
     
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
@@ -36,6 +38,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    await connectMongoose();
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -45,18 +48,20 @@ export async function PATCH(
     
     
     const note = await Note.findOneAndUpdate(
-      { _id: id, userId: session.user.id },
-      { 
-        title: title || "Untitled",
-        content: content || [],
-        updatedAt: new Date()
+      { pouchId: id, userId: session.user.id },
+      {
+        $set: {
+          title: title || "Untitled",
+          content: content || [],
+          updatedAt: new Date(),
+        },
+        $setOnInsert: {
+          pouchId: id,
+          userId: session.user.id,
+        },
       },
-      { new: true }
+      { new: true, upsert: true }
     );
-    
-    if (!note) {
-      return NextResponse.json({ error: "Note not found" }, { status: 404 });
-    }
 
     return NextResponse.json(note);
   } catch (error) {
@@ -72,13 +77,14 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    await connectMongoose();
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     
-    const note = await Note.findOneAndDelete({ _id: id, userId: session.user.id });
+    const note = await Note.findOneAndDelete({ pouchId: id, userId: session.user.id });
     
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });

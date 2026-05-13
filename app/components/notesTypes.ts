@@ -11,6 +11,7 @@ export type NoteBlock = {
 
 export type Note = {
   id: NoteId;
+  _id?: string;
   title: string;
   blocks: NoteBlock[];
   createdAt: number;
