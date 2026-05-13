@@ -48,7 +48,7 @@ export default function MiniPopup({
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          className={`absolute z-10 w-44 rounded-md border border-[var(--nb-border-strong)] bg-[var(--nb-surface)] shadow-lg overflow-hidden ${align === "right" ? "right-2" : "left-2"} ${className}`}
+          className={`absolute z-10 w-44 rounded-md border border-[var(--nb-surface-muted)] bg-[var(--nb-border-strong)] shadow-lg overflow-hidden ${align === "right" ? "right-2" : "left-2"} ${className}`}
         >
           {actions.map((action, index) => (
             <button
@@ -58,7 +58,7 @@ export default function MiniPopup({
                 action.onClick();
                 onClose();
               }}
-              className={`w-full px-3 py-2 text-left text-sm hover:bg-[var(--nb-surface-muted)] inline-flex items-center gap-2 ${
+              className={`w-full cursor-pointer border-b border-[var(--nb-surface-muted)] px-3 py-2 text-left text-sm hover:bg-[var(--nb-surface-muted)] inline-flex items-center gap-2 ${
                 action.destructive ? "text-red-500" : "text-[var(--nb-text)]"
               }`}
             >

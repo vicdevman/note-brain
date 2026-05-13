@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronsUpDown, MoreVertical, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import MiniPopup, { PopupAction } from "./MiniPopup";
 import type { Note, NoteId, NoteMenuState, TitleEditState } from "./notesTypes";
 import { getPlainTextFromHtml } from "./notesUtils";
@@ -105,11 +106,12 @@ export default function SidebarContents(props: SidebarBaseProps) {
 }
 
 function ProfileSection() {
+  const { data: session } = useSession();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const profileActions: PopupAction[] = [
     { label: "Settings", onClick: () => console.log("Settings clicked") },
-    { label: "Logout", onClick: () => console.log("Logout clicked"), destructive: true },
+    { label: "Logout", onClick: () => signOut({ callbackUrl: "/login" }), destructive: true },
   ];
 
   return (
@@ -121,14 +123,22 @@ function ProfileSection() {
           className="flex items-center gap-3 w-full hover:bg-[var(--nb-surface)]/50 p-2 rounded-sm transition-colors"
         >
           <div className="w-10 h-10 rounded-full bg-[var(--nb-primary)] flex items-center justify-center text-black font-semibold text-sm">
-            JD
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt={session.user.name || 'User'}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              session?.user?.name?.charAt(0)?.toUpperCase() || 'U'
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm text-left font-medium text-[var(--nb-border)] truncate">
-              John Doe
+              {session?.user?.name || 'User'}
             </div>
             <div className="text-xs text-left text-[var(--nb-text-muted)] truncate">
-              john.doe@example.com
+              {session?.user?.email || 'user@example.com'}
             </div>
           </div>
           <ChevronsUpDown className="h-4 w-4 text-[var(--nb-text-muted)]" />

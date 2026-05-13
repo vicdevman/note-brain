@@ -5,6 +5,7 @@
 @source "./**/*.{ts,tsx,js,jsx,mdx}";
 :root {
     --nb-bg: #1d1c1a;
+    --nb-bg-subtle: ;
     --nb-sidebar-bg: #1e1e1d;
     --nb-note-bg: #1f1f1e;
     --nb-surface: #000000;

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, PanelLeft, Plus } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
+import { SessionProvider } from "next-auth/react";
 import SidebarContents from "./Sidebar";
 import NoteEditor from "./NoteEditor";
 import type {
@@ -142,7 +143,8 @@ export default function NotesApp() {
   }
 
   return (
-    <div className="flex flex-1 min-h-[100dvh] bg-[var(--nb-note-bg)]">
+    <SessionProvider>
+      <div className="flex flex-1 min-h-[100dvh] bg-[var(--nb-note-bg)]">
       {/* Mobile floating buttons */}
       <div className="md:hidden fixed top-4 left-4 right-4 z-40 flex justify-between">
         <button
@@ -195,7 +197,7 @@ export default function NotesApp() {
               />
 
               <div className="min-w-0">
-                <div className="text-xl font-medium truncate">Note Brain</div>
+                <div className="text-xl font-medium truncate">Brainote</div>
               </div>
             </div>
 
@@ -240,7 +242,7 @@ export default function NotesApp() {
               />
 
               <div className="min-w-0">
-                <div className="text-xl font-medium truncate">Note Brain</div>
+                <div className="text-xl font-medium truncate">Brane</div>
               </div>
             </div>
           )}
@@ -322,5 +324,6 @@ export default function NotesApp() {
         </div>
       </main>
     </div>
+    </SessionProvider>
   );
 }

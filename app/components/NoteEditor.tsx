@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import type { BlockType, Note, NoteBlock } from "../../app/components/notesTypes";
 import {
   getPlainTextFromHtml,
@@ -21,6 +21,7 @@ export default function NoteEditor(props: {
   const titleRef = useRef<HTMLInputElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [linkPreview, setLinkPreview] = useState<{ url: string; title: string } | null>(null);
 
   function focusBlock(id: string) {
     const el = blockRefs.current.get(id);
@@ -38,78 +39,77 @@ export default function NoteEditor(props: {
     document.execCommand(cmd);
   }
 
-  return (
+  function detectAndShowLinkPreview(text: string) {
+    const urlRegex = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9]{1,6}\b(?:[-a-zA-Z0-9@:%_\+~#?&=]*)*)/g;
+    const urls = text.match(urlRegex);
+    
+    if (urls && urls.length > 0) {
+      const firstUrl = urls[0];
+      try {
+        const url = new URL(firstUrl);
+        setLinkPreview({
+          url: firstUrl,
+          title: url.hostname || firstUrl
+        });
+      } catch (e) {
+        setLinkPreview({
+          url: firstUrl,
+          title: firstUrl
+        });
+      }
+    } else {
+      setLinkPreview(null);
+    }
+  }
 
+  function handlePaste(e: React.ClipboardEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text');
+    if (text) {
+      detectAndShowLinkPreview(text);
+    }
+  }
+
+  return (
      <div>
-      <Editor />
+      {linkPreview && (
+        <div className="fixed top-4 right-4 z-50 p-4 bg-[var(--nb-sidebar-bg)] border border-[var(--nb-border-strong)] rounded-lg shadow-lg max-w-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-full bg-[var(--nb-primary)] flex items-center justify-center">
+              <span className="text-black text-xs font-bold">🔗</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-[var(--nb-border)] truncate">
+                {linkPreview.title}
+              </div>
+              <div className="text-xs text-[var(--nb-text-muted)] truncate">
+                {linkPreview.url}
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setLinkPreview(null)}
+              className="text-xs px-3 py-2 rounded-md border border-[var(--nb-border-strong)] bg-[var(--nb-surface-muted)] text-[var(--nb-text)] hover:bg-[var(--nb-surface)]/50"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(linkPreview.url);
+                alert('Link copied to clipboard!');
+              }}
+              className="text-xs px-3 py-2 rounded-md border border-[var(--nb-border-strong)] bg-[var(--nb-primary)] text-black hover:bg-[var(--nb-surface)]/50"
+            >
+              Copy Link
+            </button>
+          </div>
+        </div>
+      )}
+      <Editor noteId={props.note.id} initialContent={props.note.blocks || []} />
     </div>
    );
 }
 
-function BlockLine(props: {
-  block: NoteBlock;
-  index: number;
-  total: number;
-  registerRef: (el: HTMLDivElement | null) => void;
-  onChangeHtml: (html: string) => void;
-  onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
-  onPaste: (e: React.ClipboardEvent<HTMLDivElement>) => void;
-  onConvert: (type: BlockType) => void;
-}) {
-  const marker = useMemo(() => {
-    if (props.block.type === "ordered") return `${props.block.order ?? 1}.`;
-    if (props.block.type === "bullet") return "•";
-    return "";
-  }, [props.block.order, props.block.type]);
-
-  return (
-    <div className="group flex items-start gap-3 py-2">
-      <div className="w-8 shrink-0 text-right text-[var(--nb-text-muted)] text-sm leading-[22px] select-none">
-        {marker}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div
-          ref={props.registerRef}
-          contentEditable
-          suppressContentEditableWarning
-          className="outline-none min-h-[22px]"
-          onInput={(e) => {
-            const html = (e.currentTarget as HTMLDivElement).innerHTML;
-            props.onChangeHtml(html === "<br>" ? "" : html);
-          }}
-          onKeyDown={props.onKeyDown}
-          onPaste={props.onPaste}
-          dangerouslySetInnerHTML={{ __html: props.block.html }}
-        />
-
-        <div className="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 transition-opacity pt-1 flex items-center gap-2">
-          <button
-            type="button"
-            className="text-xs px-2 py-1 rounded-md border border-[var(--nb-border-strong)] bg-[var(--nb-surface-muted)]"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => props.onConvert("paragraph")}
-          >
-            Text
-          </button>
-          <button
-            type="button"
-            className="text-xs px-2 py-1 rounded-md border border-[var(--nb-border-strong)] bg-[var(--nb-surface-muted)]"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => props.onConvert("ordered")}
-          >
-            1.
-          </button>
-          <button
-            type="button"
-            className="text-xs px-2 py-1 rounded-md border border-[var(--nb-border-strong)] bg-[var(--nb-surface-muted)]"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => props.onConvert("bullet")}
-          >
-            -
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
