@@ -8,9 +8,8 @@ export default function NoteEditor(props: {
   
 
   return (
-     <div className="min-h-vh h-full">
-      <Editor key={props.note.id} noteId={props.note.id} initialContent={props.note.blocks || []} />
+     <div className="note-editor-shell min-h-vh h-full">
+      <Editor key={props.note.id} noteId={props.note.id} noteTitle={props.note.title} initialContent={props.note.blocks || []} />
     </div>
    );
 }
-

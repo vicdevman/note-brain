@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,16 @@ const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 export const metadata: Metadata = {
   title: "Brane - Smart Note Taking App",
   description: "A modern, intuitive note-taking application with powerful organization features. Create, edit, and manage your notes with ease.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "Brane",
+  appleWebApp: {
+    capable: true,
+    title: "Brane",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   keywords: "notes, note-taking, organizer, productivity, markdown, editor",
   authors: [{ name: "Brane Team" }],
   openGraph: {
@@ -30,6 +40,11 @@ export const metadata: Metadata = {
     description: "A modern, intuitive note-taking application with powerful organization features.",
     images: ["https://brane.app/og-image.png"],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#d87a5b",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

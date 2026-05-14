@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronsUpDown, MoreVertical, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import MiniPopup, { PopupAction } from "./MiniPopup";
 import type { Note, NoteId, NoteMenuState, TitleEditState } from "./notesTypes";
 
@@ -12,6 +13,7 @@ type SidebarBaseProps = {
   selectedId: NoteId | null;
   onSelect: (id: NoteId) => void;
   onCreate: () => void;
+  onSearch: () => void;
   menuState: NoteMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<NoteMenuState>>;
   titleEdit: TitleEditState;
@@ -46,6 +48,7 @@ export default function SidebarContents(props: SidebarBaseProps) {
 
             <button
               type="button"
+              onClick={props.onSearch}
               className="flex items-center cursor-pointer gap-2 hover:bg-[var(--nb-surface)]/50 p-1.5 rounded-sm w-full"
             >
               <span className="rounded-full w-6 h-6 p-0.5 flex items-center justify-center text-[var(--nb-border)]">
@@ -82,46 +85,53 @@ export default function SidebarContents(props: SidebarBaseProps) {
       )}
       
       {props.sidebarCollapsed && (
-        <div className="flex-1 flex flex-col items-center py-4 gap-3">
-          <button
-            type="button"
-            onClick={props.onCreate}
-            className="rounded-full w-6 h-6 p-1 flex items-center justify-center bg-[var(--nb-border-strong)] text-[var(--nb-border)]"
-            aria-label="Create note"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            className="rounded-full w-6 h-6 p-0.5 flex items-center justify-center text-[var(--nb-border)]"
-            aria-label="Search"
-          >
-            <Search className="h-4 w-4" />
-          </button>
+        <div className="flex-1 flex flex-col justify-between py-4">
+          <div className="flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={props.onCreate}
+              className="rounded-full w-6 h-6 p-1 flex items-center justify-center bg-[var(--nb-border-strong)] text-[var(--nb-border)]"
+              aria-label="Create note"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={props.onSearch}
+              className="rounded-full w-6 h-6 p-0.5 flex items-center justify-center text-[var(--nb-border)]"
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </div>
+          <ProfileSection compact />
         </div>
       )}
     </div>
   );
 }
 
-function ProfileSection() {
+function ProfileSection({ compact = false }: { compact?: boolean }) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const profileActions: PopupAction[] = [
-    { label: "Settings", onClick: () => console.log("Settings clicked") },
+    { label: "Profile", onClick: () => router.push("/app/profile") },
+    { label: "Edit profile", onClick: () => router.push("/app/profile/edit") },
     { label: "Logout", onClick: () => signOut({ callbackUrl: "/login" }), destructive: true },
   ];
 
   return (
-    <div className="border-t border-[var(--nb-border-strong)] p-2">
+    <div className={`${compact ? "px-2" : "border-t border-[var(--nb-border-strong)] p-2"}`}>
       <div className="relative">
         <button
           type="button"
           onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-          className="flex items-center gap-3 w-full hover:bg-[var(--nb-surface)]/50 p-2 rounded-sm transition-colors"
+          className={`${compact ? "mx-auto flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[var(--nb-primary)] text-black" : "flex items-center gap-3 w-full hover:bg-[var(--nb-surface)]/50 p-2 rounded-sm transition-colors"}`}
+          aria-label="Open profile menu"
         >
-          <div className="w-10 h-10 rounded-full bg-[var(--nb-primary)] flex items-center justify-center text-black font-semibold text-sm">
+          <div className={`${compact ? "h-full w-full" : "w-10 h-10"} rounded-full bg-[var(--nb-primary)] flex items-center justify-center text-black font-semibold text-sm`}>
             {session?.user?.image ? (
               <img
                 src={session.user.image}
@@ -132,22 +142,27 @@ function ProfileSection() {
               session?.user?.name?.charAt(0)?.toUpperCase() || 'U'
             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm text-left font-medium text-[var(--nb-border)] truncate">
-              {session?.user?.name || 'User'}
-            </div>
-            <div className="text-xs text-left text-[var(--nb-text-muted)] truncate">
-              {session?.user?.email || 'user@example.com'}
-            </div>
-          </div>
-          <ChevronsUpDown className="h-4 w-4 text-[var(--nb-text-muted)]" />
+          {!compact && (
+            <>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm text-left font-medium text-[var(--nb-border)] truncate">
+                  {session?.user?.name || 'User'}
+                </div>
+                <div className="text-xs text-left text-[var(--nb-text-muted)] truncate">
+                  {session?.user?.email || 'user@example.com'}
+                </div>
+              </div>
+              <ChevronsUpDown className="h-4 w-4 text-[var(--nb-text-muted)]" />
+            </>
+          )}
         </button>
         
         <MiniPopup
           open={profileMenuOpen}
           onClose={() => setProfileMenuOpen(false)}
           actions={profileActions}
-          className="bottom-full mb-2"
+          className={`${compact ? "bottom-0 left-full ml-2" : "bottom-full mb-2"}`}
+          align="left"
         />
       </div>
     </div>
@@ -179,7 +194,8 @@ function NoteRow(props: {
       label: "Delete", 
       icon: <Trash2 className="h-4 w-4" />,
       onClick: props.onDelete,
-      destructive: true
+      destructive: true,
+      requiresConfirm: true
     },
   ];
 

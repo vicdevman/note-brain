@@ -8,6 +8,7 @@ export type PopupAction = {
   icon?: React.ReactNode;
   onClick: () => void;
   destructive?: boolean;
+  requiresConfirm?: boolean;
 };
 
 type MiniPopupProps = {
@@ -26,6 +27,7 @@ export default function MiniPopup({
   align = "right" 
 }: MiniPopupProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [confirmIndex, setConfirmIndex] = React.useState<number | null>(null);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -40,6 +42,10 @@ export default function MiniPopup({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) setConfirmIndex(null);
+  }, [open]);
+
   return (
     <AnimatePresence>
       {open && (
@@ -48,13 +54,17 @@ export default function MiniPopup({
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          className={`absolute z-10 w-44 rounded-md border border-[var(--nb-surface-muted)] bg-[var(--nb-border-strong)] shadow-lg overflow-hidden ${align === "right" ? "right-2" : "left-2"} ${className}`}
+          className={`absolute z-100 w-44 rounded-md border border-[var(--nb-surface-muted)] bg-[var(--nb-border-strong)] shadow-lg overflow-hidden ${align === "right" ? "right-2" : "left-2"} ${className}`}
         >
           {actions.map((action, index) => (
             <button
               key={index}
               type="button"
               onClick={() => {
+                if (action.requiresConfirm && confirmIndex !== index) {
+                  setConfirmIndex(index);
+                  return;
+                }
                 action.onClick();
                 onClose();
               }}
@@ -63,9 +73,16 @@ export default function MiniPopup({
               }`}
             >
               {action.icon}
-              {action.label}
+              {action.requiresConfirm && confirmIndex === index ? "Confirm delete" : action.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full cursor-pointer px-3 py-2 text-left text-sm text-[var(--nb-text-muted)] hover:bg-[var(--nb-surface-muted)]"
+          >
+            Cancel
+          </button>
         </motion.div>
       )}
     </AnimatePresence>

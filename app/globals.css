@@ -148,8 +148,30 @@ body {
 
 :root {
     --nb-font-sans: "Gelasio";
+    --nb-font-editor: "Inter";
     --nb-font-mono: ui-monospace;
     --nb-font-sidebar: "Inter";
+}
+
+.note-editor-shell,
+.note-editor-shell .bn-container,
+.note-editor-shell .bn-editor,
+.note-editor-shell [contenteditable="true"] {
+    font-family: var(--nb-font-editor), ui-serif, Georgia, serif;
+}
+
+@media (max-width: 767px) {
+    .note-editor-shell .bn-container,
+    .note-editor-shell .bn-editor {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    .note-editor-shell .bn-block-content,
+    .note-editor-shell [data-content-type],
+    .note-editor-shell [contenteditable="true"] {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
 }
 
 
