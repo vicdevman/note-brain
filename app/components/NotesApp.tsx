@@ -18,6 +18,7 @@ import { clampTitle, fetchNotes, updateNoteAPI, deleteNoteAPI } from "./notesUti
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { localDB, formatDoc } from "../lib/pouchdb";
 import GlassSurface from "./GlassSurface";
+import { Button } from "@/components/ui/button";
 
 type SyncState = "loading" | "synced" | "pending" | "offline";
 
@@ -94,12 +95,6 @@ function MobileMenuDrawer({
       },
     },
     {
-      label: "Profile",
-      sublabel: "View account",
-      icon: <UserRound className="h-6 w-6" />,
-      href: "/app/profile",
-    },
-    {
       label: "Search",
       sublabel: "Find notes",
       icon: <Search className="h-6 w-6" />,
@@ -107,13 +102,7 @@ function MobileMenuDrawer({
         onClose();
         onSearch();
       },
-    },
-    {
-      label: "Sign out",
-      sublabel: "Leave Brane",
-      icon: <LogOut className="h-6 w-6" />,
-      onClick: () => signOut({ callbackUrl: "/login" }),
-    },
+    }
   ];
 
   return (
@@ -240,8 +229,9 @@ function MobileProfileButton({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-[var(--nb-primary)] text-sm font-semibold text-black shadow-lg"
+      className="inline-flex h-11.5 w-11.5 items-center justify-center overflow-hidden rounded-full bg-[var(--nb-primary)] text-lg font-semibold text-black shadow-lg"
       aria-label="Open profile"
+      style={{ fontFamily: "Inter, var(--nb-font-sidebar), sans-serif" }}
     >
       {session?.user?.image ? (
         <img src={session.user.image} alt={name} className="h-full w-full object-cover" />
@@ -903,25 +893,18 @@ useEffect(() => {
           {showRouteContent ? (
             children
           ) : !selected ? (
-            <div className="flex min-h-[calc(100dvh-9rem)] w-full items-center justify-center px-2" style={{ fontFamily: "Inter, var(--nb-font-sidebar), sans-serif" }}>
-              <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--nb-border-strong)] bg-[linear-gradient(135deg,rgba(216,122,91,0.13),rgba(31,31,30,0.95)_42%,rgba(12,12,12,0.7))] p-5 md:p-8">
-                <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                  <div className="max-w-xl">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--nb-border-strong)] bg-black/20 px-3 py-1 text-xs font-medium text-[var(--nb-text-muted)]">
-                      <Wifi className="h-3.5 w-3.5 text-[var(--nb-primary)]" />
-                      Local notes stay ready offline
-                    </div>
-                    <h3 className="text-3xl font-semibold leading-tight text-[var(--nb-border)] md:text-5xl">Pick up a thought, or start the next one.</h3>
-                    <p className="mt-3 max-w-lg text-sm leading-6 text-[var(--nb-text-muted)] md:text-base">
-                      Search across your notes, jump into recent work, or create a blank page. Brane will keep it local first and sync when the network is kind.
-                    </p>
+            <div className="flex mt-5 min-h-[calc(100dvh-9rem)] w-full items-center justify-center px-2" style={{ fontFamily: "Inter, var(--nb-font-sidebar), sans-serif" }}>
+              <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--nb-border-strong)] p-5 md:p-8">
+                <div className="flex flex-col gap-6 justify-center">
+                  <div className="">
+                    <h3 className="text-2xl font-semibold leading-tight text-[var(--nb-border)] md:text-4xl text-center" style={{ fontFamily: "var(--nb-font-sans), ui-sans-serif, system-ui, sans-serif" }}>Pick up a thought, or start the next one.</h3>
                   </div>
-                  <div className="grid min-w-[13rem] gap-2">
-                    <button onClick={createNote} className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[var(--nb-primary)] px-4 text-sm font-semibold text-black">
+                  <div className="flex gap-2 justify-center">
+                    <button onClick={createNote} className="cursor-pointer inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--nb-primary)] px-4 text-sm font-semibold">
                       <Plus className="h-4 w-4" />
                       New note
                     </button>
-                    <button onClick={() => setSearchOpen(true)} className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-[var(--nb-border-strong)] bg-black/10 px-4 text-sm font-semibold text-[var(--nb-border)]">
+                    <button onClick={() => setSearchOpen(true)} className="cursor-pointer inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--nb-border-strong)] bg-black/10 px-4 text-sm font-semibold text-[var(--nb-border)]">
                       <Search className="h-4 w-4" />
                       Search Brane
                     </button>

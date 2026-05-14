@@ -10,7 +10,7 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/brane-brand-kit/new-logo-primary.png",
+      "src": "/brane-brand-kit/new-logo-primary-bg.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
